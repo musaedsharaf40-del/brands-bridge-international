@@ -1,0 +1,245 @@
+// Prisma Schema for Brands Bridge International
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER & AUTH ====================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+}
+
+// ==================== PRODUCTS ====================
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  nameAr      String?   @map("name_ar") // Arabic translation
+  slug        String    @unique
+  description String?   @db.Text
+  image       String?
+  icon        String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Brand {
+  id          String   @id @default(uuid())
+  name        String
+  nameAr      String?  @map("name_ar") // Arabic translation
+  slug        String   @unique
+  description String?  @db.Text
+  logo        String?
+  website     String?
+  country     String?
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("brands")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  nameAr      String?  @map("name_ar") // Arabic translation
+  slug        String   @unique
+  description String?  @db.Text
+  sku         String?  @unique
+  image       String?
+  images      String[] // Array of additional images
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  categoryId String?   @map("category_id")
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  brandId String? @map("brand_id")
+  brand   Brand?  @relation(fields: [brandId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@map("products")
+}
+
+// ==================== INQUIRIES & CONTACT ====================
+
+model Inquiry {
+  id          String        @id @default(uuid())
+  type        InquiryType   @default(GENERAL)
+  firstName   String        @map("first_name")
+  lastName    String        @map("last_name")
+  email       String
+  phone       String?
+  company     String?
+  country     String?
+  subject     String?
+  message     String        @db.Text
+  status      InquiryStatus @default(NEW)
+  notes       String?       @db.Text // Internal notes
+  respondedAt DateTime?     @map("responded_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("inquiries")
+}
+
+enum InquiryType {
+  GENERAL
+  BUSINESS
+  PARTNERSHIP
+  SUPPORT
+}
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESPONDED
+  CLOSED
+}
+
+// ==================== WEBSITE CONTENT ====================
+
+model Content {
+  id        String      @id @default(uuid())
+  key       String      @unique // e.g., "hero_title", "about_text"
+  type      ContentType @default(TEXT)
+  value     String      @db.Text
+  valueAr   String?     @db.Text @map("value_ar") // Arabic translation
+  section   String? // Group by section: "hero", "about", "services"
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@map("contents")
+}
+
+enum ContentType {
+  TEXT
+  HTML
+  IMAGE
+  JSON
+}
+
+// ==================== STATISTICS ====================
+
+model Statistic {
+  id        String   @id @default(uuid())
+  key       String   @unique // e.g., "countries", "products", "brands"
+  label     String // Display label
+  labelAr   String?  @map("label_ar") // Arabic translation
+  value     String // The number/value to display
+  icon      String? // Icon name or path
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("statistics")
+}
+
+// ==================== PARTNERS & CERTIFICATIONS ====================
+
+model Partner {
+  id        String      @id @default(uuid())
+  name      String
+  logo      String
+  website   String?
+  type      PartnerType @default(PARTNER)
+  sortOrder Int         @default(0) @map("sort_order")
+  isActive  Boolean     @default(true) @map("is_active")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@map("partners")
+}
+
+enum PartnerType {
+  DISTRIBUTOR
+  PARTNER
+  CERTIFICATION
+}
+
+// ==================== SERVICES ====================
+
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  titleAr     String?  @map("title_ar") // Arabic translation
+  description String   @db.Text
+  descriptionAr String? @db.Text @map("description_ar") // Arabic translation
+  icon        String?
+  image       String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("services")
+}
+
+// ==================== COMPANY VALUES ====================
+
+model Value {
+  id          String   @id @default(uuid())
+  title       String
+  titleAr     String?  @map("title_ar") // Arabic translation
+  description String   @db.Text
+  descriptionAr String? @db.Text @map("description_ar") // Arabic translation
+  icon        String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("values")
+}
+
+// ==================== SETTINGS ====================
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  type      String   @default("string") // string, number, boolean, json
+  group     String   @default("general") // general, contact, social, seo
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
