@@ -1,6 +1,14 @@
-// Prisma Schema for Brands Bridge International
+// السطر 1: تعليق (اختياري)
 datasource db {
   provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+//... تبدأ الموديلات (مثل model User) من هنا  provider = "postgresql"
 }
 generator client {
   provider = "prisma-client-js"
