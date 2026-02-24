@@ -1,6 +1,7 @@
 // Prisma Schema for Brands Bridge International
-// Database: PostgreSQL
-
+datasource db {
+  provider = "postgresql"
+}
 generator client {
   provider = "prisma-client-js"
 }
