@@ -1,4 +1,3 @@
-// السطر 1: تعليق (اختياري)
 datasource db {
   provider = "postgresql"
 }
@@ -8,12 +7,12 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
-//... تبدأ الموديلات (مثل model User) من هنا  provider = "postgresql"
+// من هنا تبدأ كتابة الموديلات الخاصة بك، مثال:
+model User {
+  id    String @id @default(uuid())
+  email String @unique
+  //... بقية الحقول
 }
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   )
